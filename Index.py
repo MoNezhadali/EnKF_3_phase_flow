@@ -13,8 +13,6 @@ forecast.shape = (7,100)
 """
 
 
-
-
 def calcCov(z):
     dim=z.shape[1]
     cov=(np.matmul(z,z.transpose()))/(dim-1)
