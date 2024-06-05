@@ -123,19 +123,3 @@ def flash_calculation(z, T_bottom, P_bottom, T_surface, P_surface, Q_oil_bottom,
         'Oil Flow Rate at Surface': Q_oil_surface,
         'Gas Flow Rate at Surface': Q_gas_surface
     }
-
-# Input values
-z = np.array([0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05])
-T_bottom = 400.0  # Temperature in K
-P_bottom = 10e6   # Pressure in Pa
-T_surface = 300.0  # Temperature in K
-P_surface = 2e6  # Pressure in Pa
-Q_oil_bottom = 0.05  # m^3/s
-Q_gas_bottom = 0.01  # m^3/s
-
-# Perform flash calculation
-results = flash_calculation(z, T_bottom, P_bottom, T_surface, P_surface, Q_oil_bottom, Q_gas_bottom)
-
-# Display results
-for key, value in results.items():
-    print(f"{key}: {value:.3f}")
