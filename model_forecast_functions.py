@@ -9,8 +9,19 @@ bottom_temperature = get_initial_and_boundary_conditions()["bottom_hole_temperat
 surface_temperature = get_initial_and_boundary_conditions()["surface_temperature"]
 Q_oil_bottom = get_initial_and_boundary_conditions()["bottom_hole_flow_rate_oil"]
 Q_gas_bottom = get_initial_and_boundary_conditions()["bottom_hole_flow_rate_gas"]
+Q_water_bottom = get_initial_and_boundary_conditions()["bottom_hole_flow_rate_water"]
 
-results = flash_calculation(
+water_result = get_surface_flow_rate_water(
+    P_bottom= bottom_pressure,
+    P_surface=surface_pressure,
+    T_bottom= bottom_temperature,
+    T_surface=surface_temperature,
+    Q_water_bottom=Q_water_bottom
+)
+
+print(f"{water_result} \n *********")
+
+oil_gas_results = flash_calculation(
     z=mole_fraction,
     P_bottom= bottom_pressure,
     P_surface=surface_pressure,
@@ -20,7 +31,7 @@ results = flash_calculation(
     Q_gas_bottom=Q_gas_bottom,
     )
 
-for key, value in results.items():
+for key, value in oil_gas_results.items():
     print(f"{key}: {value:.3f} \n *********")
 
 def model_forecast(bottom_hole_pressure, bottom_hole_temperature, surface_pressure, surface_temperature, bottom_hole_flow_rate_oil, bottom_hole_flow_rate_water, bottom_hole_flow_rate_gas):
