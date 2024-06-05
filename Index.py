@@ -1,5 +1,5 @@
 import numpy as np
-from math import exp
+from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 
 """
 Some Notes:
@@ -10,29 +10,9 @@ assuming you have 10 realizations (N=100) the shape of state, forecast and data 
 state.shape = (5,100)
 data.shape = (7,100)
 forecast.shape = (7,100)
-"""
 
 
-def calcCov(z):
-    dim=z.shape[1]
-    cov=(np.matmul(z,z.transpose()))/(dim-1)
-    return cov
 
-def calcCrossCov(y,z):
-    dim=y.shape[1]
-    crossCov=np.matmul(y,z.transpose())/(dim-1)
-    return crossCov
-
-def calcKalmanGain(crossCov,forecastCov,dataErrorCov):
-    totalCov=forecastCov+dataErrorCov
-    u,s,v=np.linalg.svd(totalCov)
-    s=1/s
-    s=np.diag(s)
-    totalCovInv=np.matmul(np.matmul(u,s),u.transpose())
-    tmp=np.matmul(crossCov,totalCovInv)
-    return tmp
-
-"""
 As for model forecast the input will be:
 bottom-hole and surface pressure (p_s, p_b), bottom-hole and surface temp (t_s, t_b), bottom-hole flow rates (gas, water and oil; f_ob, f_wb, f_gb)
 Output will be:
@@ -59,7 +39,6 @@ def main():
     vVar=3
     xVar=1
     N=100
-    # t=np.array([i for i in range(10)])
     V=(np.random.normal(vMean,vVar,N))
     V=V.reshape((1,N))
     X=np.random.normal(xMean,xVar,N)
@@ -68,11 +47,8 @@ def main():
     number_of_forecasts=1 # only location
     dataMean, dataVar = generate_observation_data(total_time, velocity=10, variance=1)
     # dVar=3*np.ones([t.shape[0],1])
-    # print(dataMean)
-    # print(dataVar)
 
     state=np.vstack((X,V))
-    # print(X.shape, V.shape, state.shape)
     # state=state.reshape((state.shape[0],state.shape[1]))
 
     for i in range(total_time):
@@ -84,30 +60,20 @@ def main():
         # forecast=forecast.reshape((1,forecast.size))
         data=np.random.normal(dataMean[i],dataVar[i],N)
         dataErrorCov=np.array(dataVar[i])
-        # print(type(dataErrorCov))
         # dataErrorCov=dataErrorCov.reshape((dataErrorCov.shape[0],dataErrorCov.shape[0]))
         
         stateMean=np.mean(state,axis=1)
-        # print(stateMean)
         statePert=state-np.matmul(stateMean.reshape((stateMean.size,1)),np.ones((1,N)))
-        # print(statePert)
 
         forecastMean=np.mean(forecast,axis=1)
-        # print(forecastMean)
         forecastPert=forecast-np.matmul(forecastMean.reshape((forecastMean.size,1)),np.ones((1,N)))
-        # print(forecastPert)
         forecastCov=calcCov(forecastPert)
-        # print(forecastCov)
 
         StateForecastCrossCov=calcCrossCov(statePert,forecastPert)
-        # print(StateForecastCrossCov)
 
         kalmanGain=calcKalmanGain(StateForecastCrossCov,forecastCov=forecastCov,dataErrorCov=dataErrorCov)
-        # print(kalmanGain)
 
         state=state+np.matmul(kalmanGain,(data-forecast))
-        print(state.shape)
-
         stateMean=np.mean(state,axis=1)
 
         print(f"Estimated location is: {stateMean[0]}\nEstimated velocity is: {stateMean[1]}\n*******")
