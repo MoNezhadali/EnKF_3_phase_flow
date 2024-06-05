@@ -17,6 +17,8 @@ components = {
     'nonane': {'Tc': 594.6, 'Pc': 2.29e6, 'omega': 0.445},
     'decane': {'Tc': 617.7, 'Pc': 2.11e6, 'omega': 0.49}
 }
+z = np.array([0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05])
+
 
 # Critical properties and acentric factors
 Tc = np.array([components[comp]['Tc'] for comp in components])
@@ -62,7 +64,7 @@ def rachford_rice(V, z, K):
     return np.sum(z * (K - 1) / (1 + V * (K - 1)))
 
 # Flash calculation function
-def flash_calculation(z, T_bottom, P_bottom, T_surface, P_surface, Q_oil_bottom, Q_gas_bottom):
+def flash_calculation(T_bottom, P_bottom, T_surface, P_surface, Q_oil_bottom, Q_gas_bottom):
     # Initial guess for vapor fraction
     V_guess = 0.5
 
@@ -115,11 +117,11 @@ def flash_calculation(z, T_bottom, P_bottom, T_surface, P_surface, Q_oil_bottom,
     Q_oil_surface = n_liquid_surface * V_liquid_molar_surface
     Q_gas_surface = n_vapor_surface * V_vapor_molar_surface
 
-    return {
-        'Liquid Fraction at Bottom': 1 - V_bottom,
-        'Vapor Fraction at Bottom': V_bottom,
-        'Liquid Fraction at Surface': 1 - V_surface,
-        'Vapor Fraction at Surface': V_surface,
-        'Oil Flow Rate at Surface': Q_oil_surface,
-        'Gas Flow Rate at Surface': Q_gas_surface
-    }
+    return Q_oil_surface, Q_gas_surface
+
+    # 'Liquid Fraction at Bottom': 1 - V_bottom,
+    # 'Vapor Fraction at Bottom': V_bottom,
+    # 'Liquid Fraction at Surface': 1 - V_surface,
+    # 'Vapor Fraction at Surface': V_surface,
+    # 'Oil Flow Rate at Surface': Q_oil_surface,
+    # 'Gas Flow Rate at Surface': Q_gas_surface

@@ -33,7 +33,7 @@ def get_initial_and_boundary_conditions():
     #     'nonane': {'Tc': 594.6, 'Pc': 2.29e6, 'omega': 0.445},
     #     'decane': {'Tc': 617.7, 'Pc': 2.11e6, 'omega': 0.49}
     # }
-    mole_fraction = np.array([0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05])
+    # mole_fraction = np.array([0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05])
 
     all_initial_and_boundary_conditions = {}
     all_initial_and_boundary_conditions["bottom_hole_pressure"] = bottom_hole_pressure
@@ -49,6 +49,6 @@ def get_initial_and_boundary_conditions():
     all_initial_and_boundary_conditions["compressibility_coefficient"] = compressibility_coefficient
     all_initial_and_boundary_conditions["thermal_expansion_coefficient"] = thermal_expansion_coefficient
     # all_initial_and_boundary_conditions["components"] = components
-    all_initial_and_boundary_conditions["mole_fraction"] = mole_fraction
+    # all_initial_and_boundary_conditions["mole_fraction"] = mole_fraction
     
     return all_initial_and_boundary_conditions
