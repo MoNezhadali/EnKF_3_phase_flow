@@ -1,5 +1,5 @@
 from math import exp
-from thermo import ChemicalConstantsPackage, CEOSGas, CEOSLiquid, PRMIX, FlashVL, PropertyCorrelationsPackage
+from thermo import ChemicalConstantsPackage, CEOSGas, CEOSLiquid, PRMIX, FlashVLN, PropertyCorrelationsPackage
 from thermo.phases import GibbsExcessLiquid, IdealGas
 import numpy as np
 
@@ -39,18 +39,18 @@ def get_initial_and_boundary_conditions():
 
 
     # Define the mixture components and their mole fractions in each phase
-    components = ['methane', 'ethane', 'propane']  # Example components
+    components = ['methane', 'ethane', 'propane', 'butane', 'pentane', 'hexane', 'heptane', 'octane', 'nonane', 'decane']  # Example components
 
     # Initial conditions
     # T1 = 300  # Initial temperature in K
     # P1 = 101325  # Initial pressure in Pa
 
     # OIl phase composition and volume percentage
-    oil_mole_fractions = [0.5, 0.3, 0.2]  # Example liquid molar composition
+    oil_mole_fractions = [0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.05]  # Example liquid molar composition
     oil_volume_ratio = 0.40  # Liquid phase volume percentage
 
     # Gas phase composition and volume percentage
-    gas_mole_fractions = [0.7, 0.2, 0.1]  # Example gas molar composition
+    gas_mole_fractions = [0.6, 0.2, 0.1, 0.03, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01]  # Example gas molar composition
     gas_volume_ratio = 0.60  # Gas phase volume percentage
 
     # Final conditions
@@ -80,17 +80,18 @@ def get_surface_flow_rate_oil_and_gas(bottom_hole_pressure, surface_pressure, bo
     P2 = surface_pressure  # Final pressure in Pa
 
     # Get the necessary constants and properties
-    constants = ChemicalConstantsPackage.from_IDs(components)[0]
+    constants, properties = ChemicalConstantsPackage.from_IDs(components)
     eos_kwargs = dict(Tcs=constants.Tcs, Pcs=constants.Pcs, omegas=constants.omegas)
-    properties_oil = CEOSLiquid(PRMIX, eos_kwargs=eos_kwargs, HeatCapacityGases=None)
+    properties_oil = [CEOSLiquid(PRMIX, eos_kwargs=eos_kwargs, HeatCapacityGases=None)]
     # properties_oil = CEOSLiquid(PRMIX, constants, HeatCapacityGases=None)
     properties_gas = CEOSGas(PRMIX, eos_kwargs=eos_kwargs, HeatCapacityGases=None)
     properties_correlations = PropertyCorrelationsPackage(constants=constants)
     # Create a FlashVL object for vapor-liquid equilibrium calculations
-    flash = FlashVL(constants, properties_correlations, gas = properties_gas, liquid = properties_oil)
+    flash = FlashVLN(constants, properties_correlations, gas = properties_gas, liquids = properties_oil)
 
     V_oil_initial = bottom_hole_flow_rate_oil
     V_gas_initial = bottom_hole_flow_rate_gas
+    P1 = 90000000
     print(P1)
     oil_initial = flash.flash(T=T1, P=P1, zs=oil_mole_fractions)
     for phase in oil_initial.phases:
@@ -150,9 +151,9 @@ def test_get_surface_flow_rate_oil_and_gas():
           "oil_rate: ", oil_rate, "\n",
           "gas_rate: ", gas_rate, "\n")
 
-components = ['methane', 'ethane', 'propane']  # Example components
-constants = ChemicalConstantsPackage.from_IDs(components)[0]
-eos_kwargs = dict(Tcs=constants.Tcs, Pcs=constants.Pcs, omegas=constants.omegas)
+# components = ['methane', 'ethane', 'propane']  # Example components
+# constants = ChemicalConstantsPackage.from_IDs(components)[0]
+# eos_kwargs = dict(Tcs=constants.Tcs, Pcs=constants.Pcs, omegas=constants.omegas)
 test_get_surface_flow_rate_oil_and_gas()
 
 
