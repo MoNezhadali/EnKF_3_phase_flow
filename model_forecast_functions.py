@@ -1,6 +1,6 @@
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from water_flowrate_function import get_surface_flow_rate_water
-from flash_calculation_function import flash_calculation
+from flash import flash_calculation
 
 def model_forecast(
         P_bottom,
@@ -13,12 +13,12 @@ def model_forecast(
     ):
 
     oil_flow_rate, gas_flow_rate = flash_calculation(
-        P_bottom= bottom_pressure,
-        P_surface=surface_pressure,
-        T_bottom= bottom_temperature,
-        T_surface=surface_temperature,
-        Q_oil_bottom=Q_oil_bottom,
-        Q_gas_bottom=Q_gas_bottom,
+        P_input= bottom_pressure,
+        P_output=surface_pressure,
+        T_input= bottom_temperature,
+        T_output=surface_temperature,
+        Q_oil_input=Q_oil_bottom,
+        Q_gas_input=Q_gas_bottom,
     )
 
     water_flow_rate = get_surface_flow_rate_water(
