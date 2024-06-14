@@ -32,7 +32,7 @@ optional_states=["bottom_hole_pressure", "bottom_hole_temperature", \
                         "surface_pressure", "surface_temperature"]
 
 def get_observation_data(optional_data = [],
-                                          data_var_ratio = 0.05, time_steps=50):
+                                          data_var_ratio = 0.01, time_steps=50):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     data =[]
     for data_type in optional_data:
@@ -62,7 +62,7 @@ def get_observation_data(optional_data = [],
 
 tmp, _ = get_observation_data(optional_data=optional_data)
 
-def get_states(n=500, optional_states=[], state_var_ratio=0.1):
+def get_states(n=500, optional_states=[], state_var_ratio=0.01):
     required_states = ["bottom_hole_flow_rate_oil", "bottom_hole_flow_rate_gas", "bottom_hole_flow_rate_water",]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     all_states = optional_states + required_states
