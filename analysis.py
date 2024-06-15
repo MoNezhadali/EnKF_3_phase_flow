@@ -181,11 +181,7 @@ def main():
 
         plt.pause(0.1)
 
-        print(f"Estimated bottom_hole_pressure is: {stateMean[0]}\n"
-              f"Estimated bottom_hole_temperature is: {stateMean[1]}\n"
-              f"Estimated surface_pressure is: {stateMean[2]}\n"
-              f"Estimated surface_temperature is: {stateMean[3]}\n"
-              f"Estimated bottom_hole_flow_rate_oil is: {stateMean[4]}\n"
+        print(f"Estimated bottom_hole_flow_rate_oil is: {stateMean[4]}\n"
               f"Estimated bottom_hole_flow_rate_gas is: {stateMean[5]}\n"
               f"Estimated bottom_hole_flow_rate_water is: {stateMean[6]}\n"
               "*******")
