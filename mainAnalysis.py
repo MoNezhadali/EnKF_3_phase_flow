@@ -4,12 +4,12 @@ from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from model_forecast_functions import model_forecast
 
-"""
+""" 
 Some Notes:
 Structure of data, state, and forecast:
 assuming you have seven data (p_s, t_s, p_b, t_b, f_gs, f_os, f_ws),
 assuming you want to estimate gas, water, and oil in bottomhole,  (f_gb, f_wb, f_ob, p_b, t_b)
-assuming you have 10 realizations (N=100) the shape of state, forecast and data at each time step will be:
+assuming you have 100 realizations (N=100) the shape of state, forecast and data at each time step will be:
 state.shape = (5,100)
 data.shape = (7,100)
 forecast.shape = (7,100)
@@ -35,7 +35,7 @@ optional_states=["bottom_hole_pressure", "bottom_hole_temperature", \
 def get_observation_data(optional_data = [],
                                           data_var_ratio = 0.01, time_steps=100):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    data =[]
+    data =[] 
     for data_type in optional_data:
         data.append(all_initial_and_boundary_conditions[data_type])
     P_bottom = all_initial_and_boundary_conditions["bottom_hole_pressure"]
@@ -60,7 +60,7 @@ def get_observation_data(optional_data = [],
     observation_data = np.random.multivariate_normal(data, data_var, time_steps)
     # data_std is assumed to be constant throughout the entire period
     return observation_data.T, data_std
-
+ 
 def get_states(n=50, optional_states=[], state_var_ratio=0.01):
     required_states = ["bottom_hole_flow_rate_oil", "bottom_hole_flow_rate_gas", "bottom_hole_flow_rate_water",]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
@@ -102,10 +102,10 @@ def get_model_forecast(state, optional_states=None):
         forecast[6,i]=Q_water_surface
     
     return forecast
-
-
-
-def main():
+ 
+ 
+ 
+def main(): 
     total_obs_data, data_std = get_observation_data(optional_data=optional_data)
     state = get_states(optional_states=optional_states)
 
