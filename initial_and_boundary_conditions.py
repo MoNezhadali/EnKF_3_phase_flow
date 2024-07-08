@@ -73,7 +73,7 @@ def get_initial_and_boundary_conditions():
     # all_initial_and_boundary_conditions["components"] = components
     # all_initial_and_boundary_conditions["mole_fraction"] = mole_fraction
     
-    bottom_hole_pressure = 3000
+    bottom_hole_pressure = 1000
     bottom_hole_temperature = 150
     liquid_rate = 1000
     water_cut = 0.1
@@ -83,7 +83,7 @@ def get_initial_and_boundary_conditions():
     water_gravity = 1.121
     pipe_diameter = 3
     inclination_angle = 90
-    total_pipe_length = 3000
+    total_pipe_length = 2700
     pipe_roughness = 0.005
     separator_pressure = 114.7
     separator_temperature = 50
@@ -99,6 +99,7 @@ def get_initial_and_boundary_conditions():
     all_initial_and_boundary_conditions["water_gravity"] = water_gravity
     all_initial_and_boundary_conditions["pipe_diameter"] = pipe_diameter
     all_initial_and_boundary_conditions["inclination_angle"] = inclination_angle
+    all_initial_and_boundary_conditions["total_pipe_length"] = total_pipe_length
     all_initial_and_boundary_conditions["pipe_roughness"] = pipe_roughness
     all_initial_and_boundary_conditions["separator_pressure"] = separator_pressure
     all_initial_and_boundary_conditions["separator_temperature"] = separator_temperature

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
-from model_forecast_functions import model_forecast
+from model_forecast_mechanical import model_forecast
 
 """ 
 Some Notes:
@@ -29,9 +29,6 @@ def model_forecast(p_s, p_b, t_s, t_b, f_ob, f_wb, f_gb)
 optional_data = ["bottom_hole_pressure", "bottom_hole_temperature", \
                                           "surface_pressure", "surface_temperature"]
 
-optional_states=["bottom_hole_pressure", "bottom_hole_temperature", \
-                        "surface_pressure", "surface_temperature"]
-
 def get_observation_data(optional_data = [],
                                           data_var_ratio = 0.01, time_steps=100):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
@@ -39,17 +36,17 @@ def get_observation_data(optional_data = [],
 
     # Read the CSV file into a NumPy array
     # data = np.genfromtxt(file_path, delimiter=',', skip_header=1)
-    data = np.array([988,988,988,988,988])
+    data = np.array([[988]*100])
 
     data_std = data_var_ratio * data
     # data_var = np.diag(data_std*data_std)
     # observation_data = np.random.multivariate_normal(data, data_var, time_steps)
     # data_std is assumed to be constant throughout the entire period
-    return data.T, data_std
+    return data, data_std
 
-print(get_observation_data())
+# print(get_observation_data())
  
-def get_states(n=50, optional_states=[], state_var_ratio=0.01):
+def get_states(n=100, optional_states=[], state_var_ratio=0.01):
     required_states = ["bottom_hole_pressure", "bottom_hole_temperature",
                         "liquid_rate", "water_cut", "gas_oil_ratio"]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
@@ -64,31 +61,23 @@ def get_states(n=50, optional_states=[], state_var_ratio=0.01):
         
     return states.T
 
-def get_model_forecast(state, optional_states=None):
+def get_model_forecast(state):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     # P_surface = all_initial_and_boundary_conditions["surface_pressure"]
     # T_surface = all_initial_and_boundary_conditions["surface_temperature"]
-    forecast = np.zeros((3+len(optional_states), state.shape[1]))
+    forecast = np.zeros((1, state.shape[1]))
     for i in range(state.shape[1]):
-        P_bottom = state[0,i]
-        T_bottom = state[1,i]
-        P_surface = state[2,i]
-        T_surface = state[3,i]
-        Q_oil_bottom = state[4,i]
-        Q_gas_bottom = state[5,i]
-        Q_water_bottom = state[6,i]
-        Q_oil_surface, Q_gas_surface, Q_water_surface = model_forecast( P_bottom= P_bottom,
-                                                                        P_surface= P_surface,
-                                                                        T_bottom= T_bottom,
-                                                                        T_surface= T_surface,
-                                                                        Q_oil_bottom= Q_oil_bottom,
-                                                                        Q_gas_bottom= Q_gas_bottom,
-                                                                        Q_water_bottom= Q_water_bottom,
-                                                                        )
-        forecast[0:4,i] = state[0:4,i]
-        forecast[4,i]=Q_oil_surface
-        forecast[5,i]=Q_gas_surface
-        forecast[6,i]=Q_water_surface
+        bottom_hole_pressure = state[0,i]
+        bottom_hole_temperature = state[1,i]
+        liquid_rate = state[2,i]
+        water_cut = state[3,i]
+        gas_oil_ratio = state[4,i]
+        bottom_hole_pressure_forecast = model_forecast( bottom_hole_pressure=bottom_hole_pressure,
+                                                                       bottom_hole_temperature=bottom_hole_temperature,
+                                                                       liquid_rate=liquid_rate, water_cut=water_cut,
+                                                                       gas_oil_ratio=gas_oil_ratio)
+        # forecast[1:5,i] = state[1:5,i]
+        forecast[0,i]=bottom_hole_pressure_forecast
     
     return forecast
  
@@ -96,44 +85,44 @@ def get_model_forecast(state, optional_states=None):
  
 def main(): 
     total_obs_data, data_std = get_observation_data(optional_data=optional_data)
-    state = get_states(optional_states=optional_states)
+    state = get_states(optional_states=[])
 
     total_time = total_obs_data.shape[1]
     n = state.shape[1]
 
     # Initialize lists to store estimated flow rates for plotting
-    estimated_bottom_hole_flow_rate_oil = []
-    estimated_bottom_hole_flow_rate_gas = []
-    estimated_bottom_hole_flow_rate_water = []
+    # estimated_bottom_hole_flow_rate_oil = []
+    # estimated_bottom_hole_flow_rate_gas = []
+    # estimated_bottom_hole_flow_rate_water = []
 
     # Enable interactive mode
-    plt.ion()
-    fig, axs = plt.subplots(3, 1, figsize=(12, 12))
+    # plt.ion()
+    # fig, axs = plt.subplots(3, 1, figsize=(12, 12))
     
     # Initialize the plots
-    lines = {}
-    lines['bottom_hole_flow_rate_oil'], = axs[0].plot([], [], label='Oil Flow Rate')
-    axs[0].set_xlabel('Time Step')
-    axs[0].set_ylabel('Flow Rate')
-    axs[0].legend()
+    # lines = {}
+    # lines['bottom_hole_flow_rate_oil'], = axs[0].plot([], [], label='Oil Flow Rate')
+    # axs[0].set_xlabel('Time Step')
+    # axs[0].set_ylabel('Flow Rate')
+    # axs[0].legend()
 
-    lines['bottom_hole_flow_rate_gas'], = axs[1].plot([], [], label='Gas Flow Rate')
-    axs[1].set_xlabel('Time Step')
-    axs[1].set_ylabel('Flow Rate')
-    axs[1].legend()
+    # lines['bottom_hole_flow_rate_gas'], = axs[1].plot([], [], label='Gas Flow Rate')
+    # axs[1].set_xlabel('Time Step')
+    # axs[1].set_ylabel('Flow Rate')
+    # axs[1].legend()
 
-    lines['bottom_hole_flow_rate_water'], = axs[2].plot([], [], label='Water Flow Rate')
-    axs[2].set_xlabel('Time Step')
-    axs[2].set_ylabel('Flow Rate')
-    axs[2].legend()
+    # lines['bottom_hole_flow_rate_water'], = axs[2].plot([], [], label='Water Flow Rate')
+    # axs[2].set_xlabel('Time Step')
+    # axs[2].set_ylabel('Flow Rate')
+    # axs[2].legend()
 
     time_steps = []
 
     for i in range(total_time):
         priorState = state
-        forecast = get_model_forecast(state=priorState, optional_states=optional_states)
+        forecast = get_model_forecast(state=priorState)
         data_mean_i = total_obs_data[:, i]
-        data_var_i = np.diag(data_std * data_std)
+        data_var_i = np.diag(data_std[:,i] * data_std[:,i])
         
         data = np.random.multivariate_normal(data_mean_i, data_var_i, n).T
         dataErrorCov = data_var_i
@@ -149,34 +138,36 @@ def main():
 
         kalmanGain = calcKalmanGain(StateForecastCrossCov, forecastCov=forecastCov, dataErrorCov=dataErrorCov)
 
+        print(f"sample from forecast: {forecast[:,10]}")
+
         state = state + np.matmul(kalmanGain, (data - forecast))
         stateMean = np.mean(state, axis=1)
 
         # Append the estimated values to the lists
-        estimated_bottom_hole_flow_rate_oil.append(stateMean[4])
-        estimated_bottom_hole_flow_rate_gas.append(stateMean[5])
-        estimated_bottom_hole_flow_rate_water.append(stateMean[6])
         time_steps.append(i)
 
         # Update the plots
-        lines['bottom_hole_flow_rate_oil'].set_data(time_steps, estimated_bottom_hole_flow_rate_oil)
-        lines['bottom_hole_flow_rate_gas'].set_data(time_steps, estimated_bottom_hole_flow_rate_gas)
-        lines['bottom_hole_flow_rate_water'].set_data(time_steps, estimated_bottom_hole_flow_rate_water)
+        # lines['bottom_hole_flow_rate_oil'].set_data(time_steps, estimated_bottom_hole_flow_rate_oil)
+        # lines['bottom_hole_flow_rate_gas'].set_data(time_steps, estimated_bottom_hole_flow_rate_gas)
+        # lines['bottom_hole_flow_rate_water'].set_data(time_steps, estimated_bottom_hole_flow_rate_water)
 
         # Adjust the axes
-        for ax in axs:
-            ax.relim()
-            ax.autoscale_view()
+        # for ax in axs:
+        #     ax.relim()
+        #     ax.autoscale_view()
 
-        plt.pause(0.1)
+        # plt.pause(0.1)
 
-        print(f"Estimated bottom_hole_flow_rate_oil is: {stateMean[4]}\n"
-              f"Estimated bottom_hole_flow_rate_gas is: {stateMean[5]}\n"
-              f"Estimated bottom_hole_flow_rate_water is: {stateMean[6]}\n"
+        print(f"Estimated bottom_hole_pressure is: {stateMean[0]}\n"
+              f"Estimated bottom_hole_temperature is: {stateMean[1]}\n"
+              f"Estimated liquid_rate is: {stateMean[2]}\n"
+              f"Estimated water_cut is: {stateMean[3]}\n"
+              f"Estimated gas_oil_ratio is: {stateMean[4]}\n"
               "*******")
+        # liquid_rate, water_cut, gas_oil_ratio
 
-    plt.ioff()
-    plt.show()
+    # plt.ioff()
+    # plt.show()
 
 
 
