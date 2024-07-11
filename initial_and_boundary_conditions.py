@@ -74,10 +74,10 @@ def get_initial_and_boundary_conditions():
     # all_initial_and_boundary_conditions["mole_fraction"] = mole_fraction
     
     bottom_hole_pressure = 1000
-    bottom_hole_temperature = 150
+    bottom_hole_temperature = 56
     liquid_rate = 1000
-    water_cut = 0.1
-    gas_oil_ratio = 100
+    water_cut = 0.42
+    gas_oil_ratio = 276
     gas_gravity = 0.75
     oil_gravity = 35
     water_gravity = 1.121
