@@ -2,6 +2,7 @@ import math
 import fluid_properties as pvt
 import random
 import matplotlib.pyplot as plt
+from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 
 
 def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
@@ -20,8 +21,8 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     #Psep           Separator pressure, psia
     #Tsep           Separator temperature, °F    
     
-    angle_pi = angle * math.pi / 180                       #angle_pi is converted angle in terms of pi
-    area = math.pi / 4 * (diameter / 12)**2  #X-sectional area of pipe, ft^2
+    angle_pi = angle * math.pi / 180                    #angle_pi is converted angle in terms of pi
+    area = math.pi / 4 * (diameter / 12)**2             #X-sectional area of pipe, ft^2
     gas_rate=liquid_rate*GOR                            #Gas rate, SCF/D 
     liquid_rate1=liquid_rate* 0.000065                  #Unit conversion to ft^3/s from stb/D
     
@@ -238,19 +239,58 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     return total_pres_loss_grad
 
     
-P = 3000
-T = 150
-liquid_rate = 1000
-WC = 0.1
-GOR = 100
-gas_grav = 0.75
-oil_grav = 35
-wtr_grav = 1.121
-diameter = 3
-angle = 90
-roughness = 0.005
-Psep = 114.7
-Tsep=50
+all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
+bottom_hole_pressure = all_initial_and_boundary_conditions["bottom_hole_pressure"]
+bottom_hole_temperature = all_initial_and_boundary_conditions["bottom_hole_temperature"]
+liquid_rate = all_initial_and_boundary_conditions["liquid_rate"]
+water_cut = all_initial_and_boundary_conditions["water_cut"]
+gas_oil_ratio = all_initial_and_boundary_conditions["gas_oil_ratio"]
+gas_gravity = all_initial_and_boundary_conditions["gas_gravity"]
+oil_gravity = all_initial_and_boundary_conditions["oil_gravity"]
+water_gravity = all_initial_and_boundary_conditions["water_gravity"]
+pipe_diameter = all_initial_and_boundary_conditions["pipe_diameter"]
+inclination_angle = all_initial_and_boundary_conditions["inclination_angle"]
+pipe_roughness = all_initial_and_boundary_conditions["pipe_roughness"]
+total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
+separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
+separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav, 
-            wtr_grav, diameter, angle, roughness, Psep,Tsep)
+pressure_gradient = beggs_and_brill(P=bottom_hole_pressure, T=bottom_hole_temperature,
+                                    liquid_rate=liquid_rate, WC=water_cut, GOR=gas_oil_ratio,
+                                    gas_grav=gas_gravity, oil_grav=oil_gravity, wtr_grav=water_gravity,
+                                    diameter=pipe_diameter, angle=inclination_angle, roughness=pipe_roughness,
+                                    Psep=separator_pressure, Tsep=separator_temperature)
+
+
+print("*******\n"
+      f"Total Well Depth is: {total_pipe_length}\n"
+      f"Pressure Gradient is: {pressure_gradient}\n"
+      f"TotalPressure Loss is: {pressure_gradient * total_pipe_length}\n"
+      "*******")
+
+
+
+def calculate_total_pressure_drop(num_sections, P_initial, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep, length):
+    section_length = length / num_sections
+    P = P_initial
+    total_pressure_drop = 0
+
+    for i in range(num_sections):
+        pressure_gradient = beggs_and_brill(P, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep)
+        pressure_drop = pressure_gradient * section_length
+        total_pressure_drop += pressure_drop
+        P -= pressure_drop  # Update the pressure for the next section
+
+    return total_pressure_drop
+
+
+
+total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial=bottom_hole_pressure,
+                                    T=bottom_hole_temperature, liquid_rate=liquid_rate, 
+                                    GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
+                                    gas_grav=gas_gravity, oil_grav=oil_gravity,
+                                    diameter=pipe_diameter, angle=inclination_angle,
+                                    roughness=pipe_roughness, Psep=separator_pressure, 
+                                    Tsep=separator_temperature, length=total_pipe_length)
+
+print(f"New Pressure Loss: {total_pressure_loss}\n")
