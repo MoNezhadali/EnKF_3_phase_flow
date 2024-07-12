@@ -1,15 +1,5 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 20 20:38:33 2023
-
-@author: emink
-"""
-
-
 import math
 import random
-
-
 """Function to Calculate Water Formation Volume Factor in bbl/stb"""
 
 def water_fvf(P, T, TDS):
