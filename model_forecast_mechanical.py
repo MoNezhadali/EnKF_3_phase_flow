@@ -20,5 +20,7 @@ def model_forecast(bottom_hole_pressure, bottom_hole_temperature,
                                         diameter=pipe_diameter, angle=inclination_angle, roughness=pipe_roughness,
                                         Psep=separator_pressure, Tsep=separator_temperature, length=total_pipe_length)
 
-    estimated_bottom_hole_pressure = separator_pressure + pressure_drop
-    return estimated_bottom_hole_pressure
+    # estimated_bottom_hole_pressure = separator_pressure + pressure_drop
+    # return estimated_bottom_hole_pressure
+    estimated_surface_pressure = bottom_hole_pressure - pressure_drop
+    return estimated_surface_pressure
