@@ -18,3 +18,6 @@ def calcKalmanGain(crossCov,forecastCov,dataErrorCov):
     totalCovInv=np.matmul(np.matmul(u,s),u.transpose())
     tmp=np.matmul(crossCov,totalCovInv)
     return tmp
+
+def calculate_rmse(estimated, ground_truth):
+    return np.sqrt(np.mean((estimated - ground_truth) ** 2))
