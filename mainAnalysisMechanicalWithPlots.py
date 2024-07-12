@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
+from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain, calculate_rmse
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from model_forecast_mechanical import model_forecast
 
-def get_observation_data(data_var_ratio=0.01, time_steps=400):
+def get_observation_data(data_var_ratio=0.01, time_steps=100):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    data = np.array([[988] * 400])
+    data = np.array([[988] * time_steps])
     data_std = data_var_ratio * data
     return data, data_std
 
@@ -14,9 +14,8 @@ def get_states(n=100, state_var_ratio=0.01):
     required_states = ["bottom_hole_pressure", "bottom_hole_temperature",
                        "liquid_rate", "water_cut", "gas_oil_ratio"]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    all_states = required_states
     state_mean = []
-    for state in all_states:
+    for state in required_states:
         state_mean.append(all_initial_and_boundary_conditions[state])
     state_mean = np.array(state_mean)
     state_std = state_mean * state_var_ratio
@@ -89,15 +88,21 @@ def main():
             lines[label].set_data(time_steps, state_means[label])
             axs[idx].relim()
             axs[idx].autoscale_view()
+
+        # Calculate RMSE
+        # for idx, label in enumerate(state_labels):
+        #     rmse = calculate_rmse(state_means[label][-1], ground_truth[0, i])  # Replace 0 with actual index for each state
+        #     rmses[label].append(rmse)
+        #     print(f"RMSE for {label} at time step {i}: {rmse}")    
+        print(stateMean[0])
+        plt.pause(0.01)
         
-        plt.pause(0.1)
-        
-        print(f"Estimated {state_labels[0]} is: {stateMean[0]}\n"
-              f"Estimated {state_labels[1]} is: {stateMean[1]}\n"
-              f"Estimated {state_labels[2]} is: {stateMean[2]}\n"
-              f"Estimated {state_labels[3]} is: {stateMean[3]}\n"
-              f"Estimated {state_labels[4]} is: {stateMean[4]}\n"
-              "*******")
+        # print(f"Estimated {state_labels[0]} is: {stateMean[0]}\n"
+        #       f"Estimated {state_labels[1]} is: {stateMean[1]}\n"
+        #       f"Estimated {state_labels[2]} is: {stateMean[2]}\n"
+        #       f"Estimated {state_labels[3]} is: {stateMean[3]}\n"
+        #       f"Estimated {state_labels[4]} is: {stateMean[4]}\n"
+        #       "*******")
     
     plt.ioff()
     plt.show()

@@ -83,10 +83,10 @@ def get_initial_and_boundary_conditions():
     water_gravity = 1.121
     pipe_diameter = 3
     inclination_angle = 90
-    total_pipe_length = 2700
+    total_pipe_length = 2400
     pipe_roughness = 0.005
-    separator_pressure = 114.7
-    separator_temperature = 50
+    separator_pressure = 210.7
+    separator_temperature = 20
 
     
     all_initial_and_boundary_conditions["bottom_hole_pressure"] = bottom_hole_pressure
