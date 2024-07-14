@@ -2,19 +2,19 @@ import numpy as np
 
 def get_initial_and_boundary_conditions():
     bottom_hole_pressure = 1000
-    bottom_hole_temperature = 56
+    bottom_hole_temperature = 132.8
     liquid_rate = 1000
     water_cut = 0.42
     gas_oil_ratio = 276
     gas_gravity = 0.75
     oil_gravity = 35
     water_gravity = 1.121
-    pipe_diameter = 3
+    pipe_diameter = 3.5
     inclination_angle = 90
     total_pipe_length = 2400
     pipe_roughness = 0.005
-    separator_pressure = 210.7
-    separator_temperature = 20
+    separator_pressure = 210.3
+    separator_temperature = 68
 
     all_initial_and_boundary_conditions = {}
     all_initial_and_boundary_conditions["bottom_hole_pressure"] = bottom_hole_pressure
