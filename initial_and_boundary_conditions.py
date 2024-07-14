@@ -1,9 +1,9 @@
 import numpy as np
 
 def get_initial_and_boundary_conditions():
-    bottom_hole_pressure = 1000
+    bottom_hole_pressure = 988
     bottom_hole_temperature = 132.8
-    liquid_rate = 1000
+    liquid_rate = 1040
     water_cut = 0.42
     gas_oil_ratio = 276
     gas_gravity = 0.75
