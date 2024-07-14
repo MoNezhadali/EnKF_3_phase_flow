@@ -6,7 +6,7 @@ from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from model_forecast_mechanical import model_forecast
 
-def get_observation_data(data_var_ratio=0.1, time_steps=100):
+def get_observation_data(data_var_ratio=0.1, time_steps=200):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     data = np.array([[210.3] * time_steps])
     data_std = data_var_ratio * data
@@ -102,11 +102,12 @@ def main():
     # Save results to Excel
     # Get the current date and time
     current_time = datetime.now()
-    results.to_excel(f'state_and_rmse_results - {current_time}.xlsx', index=False)
+    formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+    results.to_excel(f'state_and_rmse_results - {formatted_time}.xlsx', index=False)
     
     # Plotting the results from Excel
     plt.ioff()
-    data = pd.read_excel('state_and_rmse_results.xlsx')
+    data = pd.read_excel(f'state_and_rmse_results - {formatted_time}.xlsx')
 
     fig, axs = plt.subplots(5, 2, figsize=(12, 24))
     for idx, label in enumerate(state_labels):
