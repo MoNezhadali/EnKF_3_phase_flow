@@ -1,7 +1,7 @@
 import math
 import random
-"""Function to Calculate Water Formation Volume Factor in bbl/stb"""
 
+"""Function to Calculate Water Formation Volume Factor in bbl/stb"""
 def water_fvf(P, T, TDS):
     #P          pressure, psia
     #T          temperature, °F
@@ -217,7 +217,7 @@ def  oil_compress(T, P, Tsep, Psep, Pb, Rs, gas_grav, oil_grav):
     #T          Temperature, °F
     #P          Pressure, psia
     #Tsep       Separator temperature, °F
-    #Psep       Separatorpressure, psia
+    #Psep       Separator pressure, psia
     #Rsb        Solution gas ratio at the bubble point pressure, scf/stb
     #gas_grav   Gas specific gravity
     #oil_grav   API oil gravity
@@ -274,7 +274,7 @@ def Pr(P, T, gas_grav):
 
 """Function to Calculate Gas Compressibility Factor"""
 def zfactor(P, T, gas_grav):
-    #Tr         Reduced temperatue
+    #Tr         Reduced temperature
     #Pr         Reduced pressure
     global Pr, Tr
     Tr = (T + 460) / Tc(gas_grav)

@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
-from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain, calculate_rmse
+from datetime import datetime
+import matplotlib.pyplot as plt
+from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from model_forecast_mechanical import model_forecast
 
-def get_observation_data(data_var_ratio=0.01, time_steps=100):
+def get_observation_data(data_var_ratio=0.1, time_steps=100):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    # data = np.array([[988] * time_steps])
-    data = np.array([[217] * time_steps])
+    data = np.array([[210.3] * time_steps])
     data_std = data_var_ratio * data
     return data, data_std
 
@@ -46,11 +47,14 @@ def main():
     total_time = total_obs_data.shape[1]
     n = state.shape[1]
     
+    # Initialize data structures for storing results
+    state_labels = ["bottom_hole_pressure", "bottom_hole_temperature", "liquid_rate", "water_cut", "gas_oil_ratio"]
     time_steps = []
-    state_means = {label: [] for label in ["bottom_hole_pressure", "bottom_hole_temperature", "liquid_rate", "water_cut", "gas_oil_ratio"]}
+    state_means = {label: [] for label in state_labels}
+    rmses = {label: [] for label in state_labels}
     
     for i in range(total_time):
-        priorState = state
+        priorState = state.copy()
         forecast = get_model_forecast(state=priorState)
         data_mean_i = total_obs_data[:, i]
         data_var_i = np.diag(data_std[:, i] * data_std[:, i])
@@ -68,21 +72,55 @@ def main():
         stateMean = np.mean(state, axis=1)
         
         time_steps.append(i)
-        for idx, label in enumerate(state_means):
+        for idx, label in enumerate(state_labels):
             state_means[label].append(stateMean[idx])
         
-        print(f"Estimated bottom_hole_pressure is: {stateMean[0]}\n"
-              f"Estimated bottom_hole_temperature is: {stateMean[1]}\n"
-              f"Estimated liquid_rate is: {stateMean[2]}\n"
-              f"Estimated water_cut is: {stateMean[3]}\n"
-              f"Estimated gas_oil_ratio is: {stateMean[4]}\n"
+        # Calculate RMSE for each state variable
+        for idx, label in enumerate(state_labels):
+            rmse = np.sqrt(np.mean((stateMean[idx] - np.mean(priorState, axis=1)[idx])**2))
+            rmses[label].append(rmse)
+        
+        print(f"Estimated {state_labels[0]} is: {stateMean[0]}\n"
+              f"Estimated {state_labels[1]} is: {stateMean[1]}\n"
+              f"Estimated {state_labels[2]} is: {stateMean[2]}\n"
+              f"Estimated {state_labels[3]} is: {stateMean[3]}\n"
+              f"Estimated {state_labels[4]} is: {stateMean[4]}\n"
+              f"RMSE at time step {i}:\n"
+              f" - {state_labels[0]}: {rmses[state_labels[0]][-1]}\n"
+              f" - {state_labels[1]}: {rmses[state_labels[1]][-1]}\n"
+              f" - {state_labels[2]}: {rmses[state_labels[2]][-1]}\n"
+              f" - {state_labels[3]}: {rmses[state_labels[3]][-1]}\n"
+              f" - {state_labels[4]}: {rmses[state_labels[4]][-1]}\n"
               "*******")
     
-    # Create a DataFrame with the results
-    results_df = pd.DataFrame(state_means, index=time_steps)
+    # Create DataFrame to store results
+    results = pd.DataFrame({'time_step': time_steps})
+    for label in state_labels:
+        results[label] = state_means[label]
+        results[f'{label}_rmse'] = rmses[label]
     
-    # Save the DataFrame to an Excel file
-    results_df.to_excel('output_data.xlsx', index_label='Time Step')
+    # Save results to Excel
+    # Get the current date and time
+    current_time = datetime.now()
+    results.to_excel(f'state_and_rmse_results - {current_time}.xlsx', index=False)
+    
+    # Plotting the results from Excel
+    plt.ioff()
+    data = pd.read_excel('state_and_rmse_results.xlsx')
+
+    fig, axs = plt.subplots(5, 2, figsize=(12, 24))
+    for idx, label in enumerate(state_labels):
+        axs[idx, 0].plot(data['time_step'], data[label], label=label)
+        axs[idx, 0].set_xlabel('Time Step')
+        axs[idx, 0].set_ylabel(label)
+        axs[idx, 0].legend()
+
+        axs[idx, 1].plot(data['time_step'], data[f'{label}_rmse'], label=f'{label} RMSE')
+        axs[idx, 1].set_xlabel('Time Step')
+        axs[idx, 1].set_ylabel(f'{label} RMSE')
+        axs[idx, 1].legend()
+
+    plt.show()
 
 if __name__ == "__main__":
     main()
