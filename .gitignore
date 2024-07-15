@@ -1,1 +1,4 @@
 *.xlsx
+*.cpython-311.pyc
+__pycache__/
+.DS_Store
