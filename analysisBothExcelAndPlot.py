@@ -99,15 +99,16 @@ def main():
         results[label] = state_means[label]
         results[f'{label}_rmse'] = rmses[label]
     
-    # Save results to Excel
-    # Get the current date and time
+    # Get user input to be added at the end of the file name and creating excel
+    user_input = input("Enter a string to be added to the file name: ")
     current_time = datetime.now()
     formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-    results.to_excel(f'state_and_rmse_results - {formatted_time}.xlsx', index=False)
+    file_name = f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx'
+    results.to_excel(file_name, index=False)    
     
     # Plotting the results from Excel
     plt.ioff()
-    data = pd.read_excel(f'state_and_rmse_results - {formatted_time}.xlsx')
+    data = pd.read_excel(f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx')
 
     fig, axs = plt.subplots(5, 2, figsize=(12, 24))
     for idx, label in enumerate(state_labels):
