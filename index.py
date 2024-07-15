@@ -6,17 +6,22 @@ from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 from model_forecast_mechanical import model_forecast
 
-def get_observation_data(data_var_ratio=0.1, time_steps=300):
-    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    data = np.array([[210.3] * time_steps])
-    # data[0, :100] = 220
-    # data[0, 100:200] = 210
-    # data[0, 200:] = 200     
-    # data = np.array([[988] * time_steps])
+def get_observation_data(data_var_ratio=0.1, time_steps=3):
+
+    bottom_hole_pressure = np.array([[988] * time_steps])
+    bottom_hole_temperature = np.array([[132.8] * time_steps])
+    liquid_rate = np.array([[1040] * time_steps])
+    water_cut = np.array([[0.42] * time_steps])
+    gas_oil_ratio = np.array([[276] * time_steps])
+    separator_pressure = np.array([[210.3] * time_steps])
+    separator_temperature = np.array([[68] * time_steps])
+    
+    data = np.vstack([bottom_hole_pressure, bottom_hole_temperature, liquid_rate,
+                      water_cut, gas_oil_ratio, separator_pressure, separator_temperature])
     data_std = data_var_ratio * data
     return data, data_std
 
-def get_states(n=100, state_var_ratio=0.01):
+def get_states(n=10, state_var_ratio=0.01):
     required_states = ["bottom_hole_pressure", "bottom_hole_temperature",
                        "liquid_rate", "water_cut", "gas_oil_ratio"]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
@@ -30,7 +35,6 @@ def get_states(n=100, state_var_ratio=0.01):
     return states.T
 
 def get_model_forecast(state):
-    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     forecast = np.zeros((1, state.shape[1]))
     for i in range(state.shape[1]):
         bottom_hole_pressure = state[0, i]
@@ -63,6 +67,7 @@ def main():
         data_mean_i = total_obs_data[:, i]
         data_var_i = np.diag(data_std[:, i] * data_std[:, i])
         data = np.random.multivariate_normal(data_mean_i, data_var_i, n).T
+        print(data)
         dataErrorCov = data_var_i
         
         stateMean = np.mean(state, axis=1)
@@ -71,7 +76,7 @@ def main():
         forecastPert = forecast - np.outer(forecastMean, np.ones(n))
         forecastCov = calcCov(forecastPert)
         StateForecastCrossCov = calcCrossCov(statePert, forecastPert)
-        kalmanGain = calcKalmanGain(StateForecastCrossCov, forecastCov=forecastCov, dataErrorCov=dataErrorCov)
+        kalmanGain = calcKalmanGain(crossCov=StateForecastCrossCov, forecastCov=forecastCov, dataErrorCov=dataErrorCov)
         state = state + np.matmul(kalmanGain, (data - forecast))
         stateMean = np.mean(state, axis=1)
         
