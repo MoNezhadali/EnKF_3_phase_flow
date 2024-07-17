@@ -270,7 +270,7 @@ total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
 separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial=bottom_hole_pressure,
+total_pressure_loss = calculate_total_pressure_drop(num_sections=10, P_initial=bottom_hole_pressure,
                                     T=bottom_hole_temperature, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,

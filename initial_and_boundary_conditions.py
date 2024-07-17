@@ -11,7 +11,7 @@ def get_initial_and_boundary_conditions():
     water_gravity = 1.121
     pipe_diameter = 3.5
     inclination_angle = 90
-    total_pipe_length = 2400
+    total_pipe_length = 2600
     pipe_roughness = 0.005
     separator_pressure = 210.3
     separator_temperature = 68
