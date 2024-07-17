@@ -4,24 +4,23 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from mathematical_calculations import calcCov, calcCrossCov, calcKalmanGain
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
-from model_forecast_mechanical import model_forecast
+from model_forecast_PT import model_forecast
 
-def get_observation_data(data_var_ratio=0.1, time_steps=3):
 
-    bottom_hole_pressure = np.array([[988] * time_steps])
-    bottom_hole_temperature = np.array([[132.8] * time_steps])
-    liquid_rate = np.array([[1040] * time_steps])
-    water_cut = np.array([[0.42] * time_steps])
-    gas_oil_ratio = np.array([[276] * time_steps])
-    separator_pressure = np.array([[210.3] * time_steps])
-    separator_temperature = np.array([[68] * time_steps])
+def get_observation_data(data_var_ratio=0.1, time_steps=200):
+    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
+    separator_pressure = all_initial_and_boundary_conditions['separator_pressure']
+    separator_temperature = all_initial_and_boundary_conditions['separator_temperature']
     
-    data = np.vstack([bottom_hole_pressure, bottom_hole_temperature, liquid_rate,
-                      water_cut, gas_oil_ratio, separator_pressure, separator_temperature])
+    separator_pressure_data = [separator_pressure] * time_steps
+    separator_temperature_data = [separator_temperature] * time_steps
+    
+    data = np.array([separator_pressure_data, separator_temperature_data])
     data_std = data_var_ratio * data
+    
     return data, data_std
 
-def get_states(n=10, state_var_ratio=0.01):
+def get_states(n=100, state_var_ratio=0.01):
     required_states = ["bottom_hole_pressure", "bottom_hole_temperature",
                        "liquid_rate", "water_cut", "gas_oil_ratio"]
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
@@ -35,21 +34,25 @@ def get_states(n=10, state_var_ratio=0.01):
     return states.T
 
 def get_model_forecast(state):
-    forecast = np.zeros((1, state.shape[1]))
+    forecast = np.zeros((2, state.shape[1]))
     for i in range(state.shape[1]):
         bottom_hole_pressure = state[0, i]
         bottom_hole_temperature = state[1, i]
         liquid_rate = state[2, i]
         water_cut = state[3, i]
         gas_oil_ratio = state[4, i]
-        bottom_hole_pressure_forecast = model_forecast(bottom_hole_pressure=bottom_hole_pressure,
-                                                       bottom_hole_temperature=bottom_hole_temperature,
-                                                       liquid_rate=liquid_rate, water_cut=water_cut,
-                                                       gas_oil_ratio=gas_oil_ratio)
+        bottom_hole_pressure_forecast, bottom_hole_temperature_forecast = model_forecast(
+                                            bottom_hole_pressure=bottom_hole_pressure,
+                                            bottom_hole_temperature=bottom_hole_temperature,
+                                            liquid_rate=liquid_rate, water_cut=water_cut,
+                                            gas_oil_ratio=gas_oil_ratio)
+        
         forecast[0, i] = bottom_hole_pressure_forecast
+        forecast[1, i] = bottom_hole_temperature_forecast
     return forecast
 
 def main():
+    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     total_obs_data, data_std = get_observation_data()
     state = get_states()
     total_time = total_obs_data.shape[1]
@@ -61,13 +64,20 @@ def main():
     state_means = {label: [] for label in state_labels}
     rmses = {label: [] for label in state_labels}
     
+    true_values = {
+        "bottom_hole_pressure": all_initial_and_boundary_conditions['bottom_hole_pressure'],
+        "bottom_hole_temperature": all_initial_and_boundary_conditions['bottom_hole_temperature'],
+        "liquid_rate": all_initial_and_boundary_conditions['liquid_rate'],
+        "water_cut": all_initial_and_boundary_conditions['water_cut'],
+        "gas_oil_ratio": all_initial_and_boundary_conditions['gas_oil_ratio']
+    }
+    
     for i in range(total_time):
         priorState = state.copy()
         forecast = get_model_forecast(state=priorState)
         data_mean_i = total_obs_data[:, i]
         data_var_i = np.diag(data_std[:, i] * data_std[:, i])
         data = np.random.multivariate_normal(data_mean_i, data_var_i, n).T
-        print(data)
         dataErrorCov = data_var_i
         
         stateMean = np.mean(state, axis=1)
@@ -76,7 +86,11 @@ def main():
         forecastPert = forecast - np.outer(forecastMean, np.ones(n))
         forecastCov = calcCov(forecastPert)
         StateForecastCrossCov = calcCrossCov(statePert, forecastPert)
-        kalmanGain = calcKalmanGain(crossCov=StateForecastCrossCov, forecastCov=forecastCov, dataErrorCov=dataErrorCov)
+        kalmanGain = calcKalmanGain(crossCov=StateForecastCrossCov,
+                                    forecastCov=forecastCov, 
+                                    dataErrorCov=dataErrorCov)
+
+        # UPDATE STATE
         state = state + np.matmul(kalmanGain, (data - forecast))
         stateMean = np.mean(state, axis=1)
         
@@ -107,28 +121,35 @@ def main():
     for label in state_labels:
         results[label] = state_means[label]
         results[f'{label}_rmse'] = rmses[label]
+        results[f'{label}_true'] = [true_values[label]] * total_time
     
     # Get user input to be added at the end of the file name and creating excel
     user_input = input("Enter a string to be added to the file name: ")
     current_time = datetime.now()
     formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-    file_name = f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx'
+    file_name = f'z - {user_input} - {formatted_time}.xlsx'
     results.to_excel(file_name, index=False)    
     
     # Plotting the results from Excel
     plt.ioff()
-    data = pd.read_excel(f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx')
+    data = pd.read_excel(f'z - {user_input} - {formatted_time}.xlsx')
 
     fig, axs = plt.subplots(5, 2, figsize=(12, 24))
     for idx, label in enumerate(state_labels):
-        axs[idx, 0].plot(data['time_step'], data[label], label=label)
+        state_data = data[label]
+        true_value = true_values[label]
+        axs[idx, 0].plot(data['time_step'], state_data, label=label)
+        axs[idx, 0].plot(data['time_step'], data[f'{label}_true'], 'r--', label='True')
+        
+        # Set y-axis limits to provide some margin around true values
+        y_margin = (max(state_data) - min(state_data)) * 0.1
+        axs[idx, 0].set_ylim(min(min(state_data), true_value) - y_margin, max(max(state_data), true_value) + y_margin)
+        
         axs[idx, 0].set_xlabel('Time Step')
-        axs[idx, 0].set_ylabel(label)
         axs[idx, 0].legend()
 
         axs[idx, 1].plot(data['time_step'], data[f'{label}_rmse'], label=f'{label} RMSE')
         axs[idx, 1].set_xlabel('Time Step')
-        axs[idx, 1].set_ylabel(f'{label} RMSE')
         axs[idx, 1].legend()
 
     plt.show()

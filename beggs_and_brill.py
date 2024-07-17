@@ -275,6 +275,7 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
             break
 
     return total_pressure_drop
+    # return total_pressure_drop, T
 
 
 
@@ -296,7 +297,7 @@ total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
 separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial=bottom_hole_pressure,
+total_pressure_loss, T = calculate_total_pressure_drop(num_sections=10, P_initial=bottom_hole_pressure,
                                     T_initial=bottom_hole_temperature, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,
@@ -304,6 +305,7 @@ total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial
                                     roughness=pipe_roughness, Psep=separator_pressure, 
                                     Tsep=separator_temperature, length=total_pipe_length)
 
+print(f"Temperature: {T}\n")
 print(f"New Pressure Loss: {total_pressure_loss}\n")
 print(f"Top Pressure: {bottom_hole_pressure - total_pressure_loss}\n")
 print(f"Bottom Pressure: {separator_pressure + total_pressure_loss}\n")
