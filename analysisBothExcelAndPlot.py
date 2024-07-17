@@ -8,11 +8,7 @@ from model_forecast_mechanical import model_forecast
 
 def get_observation_data(data_var_ratio=0.1, time_steps=200):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    data = np.array([[210.3] * time_steps])
-    # data[0, :100] = 220
-    # data[0, 100:200] = 210
-    # data[0, 200:] = 200     
-    # data = np.array([[988] * time_steps])
+    data = np.array([[all_initial_and_boundary_conditions['separator_pressure']] * time_steps])
     data_std = data_var_ratio * data
     return data, data_std
 
@@ -30,7 +26,6 @@ def get_states(n=100, state_var_ratio=0.01):
     return states.T
 
 def get_model_forecast(state):
-    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     forecast = np.zeros((1, state.shape[1]))
     for i in range(state.shape[1]):
         bottom_hole_pressure = state[0, i]
@@ -46,6 +41,7 @@ def get_model_forecast(state):
     return forecast
 
 def main():
+    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     total_obs_data, data_std = get_observation_data()
     state = get_states()
     total_time = total_obs_data.shape[1]
@@ -58,11 +54,11 @@ def main():
     rmses = {label: [] for label in state_labels}
     
     true_values = {
-        "bottom_hole_pressure": 988,
-        "bottom_hole_temperature": 132.8,
-        "liquid_rate": 1040,
-        "water_cut": 0.42,
-        "gas_oil_ratio": 276
+        "bottom_hole_pressure": all_initial_and_boundary_conditions['bottom_hole_pressure'],
+        "bottom_hole_temperature": all_initial_and_boundary_conditions['bottom_hole_temperature'],
+        "liquid_rate": all_initial_and_boundary_conditions['liquid_rate'],
+        "water_cut": all_initial_and_boundary_conditions['water_cut'],
+        "gas_oil_ratio": all_initial_and_boundary_conditions['gas_oil_ratio']
     }
     
     for i in range(total_time):

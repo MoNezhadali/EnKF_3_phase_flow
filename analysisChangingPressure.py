@@ -8,11 +8,10 @@ from model_forecast_mechanical import model_forecast
 
 def get_observation_data(data_var_ratio=0.1, time_steps=300):
     all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
-    # data = np.array([[210.3] * time_steps])
-    data = np.array([[988] * time_steps])
+    data = np.array([[all_initial_and_boundary_conditions['separator_pressure']] * time_steps])
     data[0, :100] = 988
-    data[0, 100:200] = 960
-    data[0, 200:] = 988     
+    data[0, 100:200] = 948
+    data[0, 200:] = 988
     data_std = data_var_ratio * data
     return data, data_std
 
@@ -30,7 +29,6 @@ def get_states(n=100, state_var_ratio=0.01):
     return states.T
 
 def get_model_forecast(state):
-    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     forecast = np.zeros((1, state.shape[1]))
     for i in range(state.shape[1]):
         bottom_hole_pressure = state[0, i]
@@ -46,6 +44,7 @@ def get_model_forecast(state):
     return forecast
 
 def main():
+    all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
     total_obs_data, data_std = get_observation_data()
     state = get_states()
     total_time = total_obs_data.shape[1]
@@ -56,8 +55,19 @@ def main():
     time_steps = []
     state_means = {label: [] for label in state_labels}
     rmses = {label: [] for label in state_labels}
-    obs_data_list = []
-
+    
+    tru_value_pressure_data = np.array([[all_initial_and_boundary_conditions['separator_pressure']] * 300])
+    tru_value_pressure_data[0, :100] = 988
+    tru_value_pressure_data[0, 100:200] = 948
+    tru_value_pressure_data[0, 200:] = 988
+    true_values = {
+        "bottom_hole_pressure": tru_value_pressure_data,
+        "bottom_hole_temperature": all_initial_and_boundary_conditions['bottom_hole_temperature'],
+        "liquid_rate": all_initial_and_boundary_conditions['liquid_rate'],
+        "water_cut": all_initial_and_boundary_conditions['water_cut'],
+        "gas_oil_ratio": all_initial_and_boundary_conditions['gas_oil_ratio']
+    }
+    
     for i in range(total_time):
         priorState = state.copy()
         forecast = get_model_forecast(state=priorState)
@@ -77,7 +87,6 @@ def main():
         stateMean = np.mean(state, axis=1)
         
         time_steps.append(i)
-        obs_data_list.append(data_mean_i[0])
         for idx, label in enumerate(state_labels):
             state_means[label].append(stateMean[idx])
         
@@ -104,39 +113,37 @@ def main():
     for label in state_labels:
         results[label] = state_means[label]
         results[f'{label}_rmse'] = rmses[label]
-    results['observation_data'] = obs_data_list
+        results[f'{label}_true'] = [true_values[label]] * total_time
     
     # Get user input to be added at the end of the file name and creating excel
     user_input = input("Enter a string to be added to the file name: ")
     current_time = datetime.now()
     formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-    file_name = f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx'
+    file_name = f'z - {user_input} - {formatted_time}.xlsx'
     results.to_excel(file_name, index=False)    
     
     # Plotting the results from Excel
     plt.ioff()
-    data = pd.read_excel(f'state_and_rmse_results - {formatted_time} - {user_input}.xlsx')
+    data = pd.read_excel(f'z - {user_input} - {formatted_time}.xlsx')
 
-    fig, axs = plt.subplots(6, 2, figsize=(12, 28))  # Increased subplot count
+    fig, axs = plt.subplots(5, 2, figsize=(12, 24))
     for idx, label in enumerate(state_labels):
-        axs[idx, 0].plot(data['time_step'], data[label], label=label)
+        state_data = data[label]
+        true_value = true_values[label]
+        axs[idx, 0].plot(data['time_step'], state_data, label=label)
+        axs[idx, 0].plot(data['time_step'], data[f'{label}_true'], 'r--', label='True')
+        
+        # Set y-axis limits to provide some margin around true values
+        # y_margin = (max(state_data) - min(state_data)) * 0.1
+        # axs[idx, 0].set_ylim(min(min(state_data), true_value) - y_margin, max(max(state_data), true_value) + y_margin)
+        
         axs[idx, 0].set_xlabel('Time Step')
-        axs[idx, 0].set_ylabel(label)
         axs[idx, 0].legend()
 
         axs[idx, 1].plot(data['time_step'], data[f'{label}_rmse'], label=f'{label} RMSE')
         axs[idx, 1].set_xlabel('Time Step')
-        axs[idx, 1].set_ylabel(f'{label} RMSE')
         axs[idx, 1].legend()
 
-    # Plotting bottom_hole_pressure and observation data
-    axs[5, 0].plot(data['time_step'], data['bottom_hole_pressure'], label='bottom_hole_pressure')
-    axs[5, 0].plot(data['time_step'], data['observation_data'], label='observation_data', linestyle='--')
-    axs[5, 0].set_xlabel('Time Step')
-    axs[5, 0].set_ylabel('Pressure')
-    axs[5, 0].legend()
-
-    plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":

@@ -240,15 +240,22 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     return total_pres_loss_grad
 
 
-def calculate_total_pressure_drop(num_sections, P_initial, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep, length):
+def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep, length):
     # Calculate the length of each section
     section_length = length / num_sections
-    # Initialize pressure and total pressure drop
+    # Initialize pressure, temperature, and total pressure drop
     P = P_initial
+    T = T_initial
     total_pressure_drop = 0
-
+    
+    # Calculate the temperature gradient
+    temp_gradient = (Tsep - T_initial) / length
+    
     for i in range(num_sections):
         try:
+            # Calculate the temperature for the current section
+            T = T_initial + temp_gradient * (section_length * i)
+            
             # Calculate the pressure gradient using Beggs and Brill method
             pressure_gradient = beggs_and_brill(P, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep)
             if pressure_gradient < 0:
@@ -272,6 +279,7 @@ def calculate_total_pressure_drop(num_sections, P_initial, T, liquid_rate, WC, G
 
 
 
+
 all_initial_and_boundary_conditions = get_initial_and_boundary_conditions()
 bottom_hole_pressure = all_initial_and_boundary_conditions["bottom_hole_pressure"]
 bottom_hole_temperature = all_initial_and_boundary_conditions["bottom_hole_temperature"]
@@ -289,7 +297,7 @@ separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
 total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial=bottom_hole_pressure,
-                                    T=bottom_hole_temperature, liquid_rate=liquid_rate, 
+                                    T_initial=bottom_hole_temperature, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,
                                     diameter=pipe_diameter, angle=inclination_angle,

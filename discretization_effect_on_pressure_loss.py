@@ -28,7 +28,7 @@ for i in num_sections_list:
     total_pressure_loss = calculate_total_pressure_drop(
         num_sections=i, 
         P_initial=bottom_hole_pressure,
-        T=bottom_hole_temperature, 
+        T_initial=bottom_hole_temperature, 
         liquid_rate=liquid_rate, 
         GOR=gas_oil_ratio, 
         wtr_grav=water_gravity, 
