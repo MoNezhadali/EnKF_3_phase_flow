@@ -234,23 +234,40 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     Ek = um * usg * rhobar / 32.17 / P / 144
     total_pres_loss_grad= (friction_loss +elevation_loss)/(1-Ek)     #Overall pressure gradient, psi/ft   
 
-    # print(flow_type)
+    print(flow_type)
     # print(total_pres_loss_grad)
     return total_pres_loss_grad
 
 
 def calculate_total_pressure_drop(num_sections, P_initial, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep, length):
+    # Calculate the length of each section
     section_length = length / num_sections
+    # Initialize pressure and total pressure drop
     P = P_initial
     total_pressure_drop = 0
 
     for i in range(num_sections):
-        pressure_gradient = beggs_and_brill(P, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep)
-        pressure_drop = pressure_gradient * section_length
-        total_pressure_drop += pressure_drop
-        P -= pressure_drop  # Update the pressure for the next section
+        try:
+            # Calculate the pressure gradient using Beggs and Brill method
+            pressure_gradient = beggs_and_brill(P, T, liquid_rate, WC, GOR, gas_grav, oil_grav, wtr_grav, diameter, angle, roughness, Psep, Tsep)
+            if pressure_gradient < 0:
+                raise ValueError("Pressure gradient calculation returned a negative value.")
+            
+            # Calculate the pressure drop for the current section
+            pressure_drop = pressure_gradient * section_length
+            total_pressure_drop += pressure_drop
+            
+            # Update the pressure for the next section
+            P -= pressure_drop
+            
+            if P < 0:
+                raise ValueError("Pressure dropped below zero.")
+        except Exception as e:
+            print(f"Error calculating pressure drop in section {i+1}: {e}")
+            break
 
     return total_pressure_drop
+
 
 
 
