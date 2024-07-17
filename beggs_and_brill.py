@@ -1,7 +1,8 @@
 import math
-import fluid_properties as pvt
 import random
+import pandas as pd
 import matplotlib.pyplot as plt
+import fluid_properties as pvt
 from initial_and_boundary_conditions import get_initial_and_boundary_conditions
 
 
@@ -60,15 +61,15 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     sigl = (Bw * wor * rhow) / (Bw * wor * rhow + Bo * rhoo) * sigw + (Bo * rhoo) / (Bw * wor * rhow + Bo * rhoo) * sigo           
     #sigl     Gas-liquid interfacial tension, dynes/cm
     #Calculate bottomhole fluid velocity in ft_/s
-    qo = Bo * oil_rate / 15387                                          #Oil flowrate
-    qw = Bw * wor * oil_rate / 15387                                    #Water flowrate
-    ql = qo + qw                                                        #Liquid flowrate
+    qo = Bo * oil_rate / 15387                                 #Oil flowrate
+    qw = Bw * wor * oil_rate / 15387                           #Water flowrate
+    ql = qo + qw                                               #Liquid flowrate
     if ((GOR - Rso - Rsw*wor) <= 0):                           #If gas flowrate is negative, set to zero
         qg = 0
     else:
         qg = Bg * (GOR - Rso - Rsw * wor) * oil_rate / 86400
        
-    usl = ql / area                                                      #Liquid superficial velocity
+    usl = ql / area                                            #Liquid superficial velocity
     usg = qg / area
     um = usl + usg                                       #Mixture superficial velocity, ft/s
 
@@ -234,7 +235,7 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
     Ek = um * usg * rhobar / 32.17 / P / 144
     total_pres_loss_grad= (friction_loss +elevation_loss)/(1-Ek)     #Overall pressure gradient, psi/ft   
 
-    print(flow_type)
+    # print(flow_type)
     # print(total_pres_loss_grad)
     return total_pres_loss_grad
 
@@ -287,7 +288,7 @@ total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
 separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-total_pressure_loss = calculate_total_pressure_drop(num_sections=10, P_initial=bottom_hole_pressure,
+total_pressure_loss = calculate_total_pressure_drop(num_sections=1000, P_initial=bottom_hole_pressure,
                                     T=bottom_hole_temperature, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,
@@ -298,3 +299,5 @@ total_pressure_loss = calculate_total_pressure_drop(num_sections=10, P_initial=b
 print(f"New Pressure Loss: {total_pressure_loss}\n")
 print(f"Top Pressure: {bottom_hole_pressure - total_pressure_loss}\n")
 print(f"Bottom Pressure: {separator_pressure + total_pressure_loss}\n")
+
+
