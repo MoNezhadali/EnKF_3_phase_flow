@@ -15,7 +15,7 @@ def model_forecast(bottom_hole_pressure, bottom_hole_temperature,
     total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
     separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
     separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
-    pressure_drop, estimated_bottom_hole_temperature = calculate_total_pressure_drop(
+    pressure_drop, estimated_bottom_hole_temperature, flow_regime, liquid_hold_up, qo, qw, qg = calculate_total_pressure_drop(
                     num_sections=100 , P_initial=bottom_hole_pressure, 
                     T_initial=bottom_hole_temperature, length=total_pipe_length,
                     liquid_rate=liquid_rate, WC=water_cut, GOR=gas_oil_ratio,
@@ -23,9 +23,9 @@ def model_forecast(bottom_hole_pressure, bottom_hole_temperature,
                     diameter=pipe_diameter, angle=inclination_angle, roughness=pipe_roughness,
                     Psep=separator_pressure, Tsep=separator_temperature)
 
-    # estimated_bottom_hole_pressure = separator_pressure + pressure_drop
-    # return estimated_bottom_hole_pressure, estimated_bottom_hole_temperature
+    estimated_bottom_hole_pressure = separator_pressure + pressure_drop
+    return estimated_bottom_hole_pressure, estimated_bottom_hole_temperature, flow_regime, liquid_hold_up, qo, qw, qg
 
-    estimated_surface_pressure = bottom_hole_pressure - pressure_drop
-    estimated_surface_temperature = estimated_bottom_hole_temperature
-    return estimated_surface_pressure, estimated_surface_temperature
+    # estimated_surface_pressure = bottom_hole_pressure - pressure_drop
+    # estimated_surface_temperature = estimated_bottom_hole_temperature
+    # return estimated_surface_pressure, estimated_surface_temperature, flow_regime, liquid_hold_up
