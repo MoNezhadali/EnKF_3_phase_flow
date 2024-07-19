@@ -250,10 +250,14 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
     P = P_initial
     T = T_initial
     total_pressure_drop = 0
-    
+
     # Calculate the temperature gradient
     temp_gradient = (Tsep - T_initial) / length
     
+    # Initialize lists to store results
+    flow_types = []
+    liquid_hold_ups = []
+
     for i in range(num_sections):
         try:
             # Calculate the temperature for the current section
@@ -278,12 +282,23 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
             
             if P < 0:
                 raise ValueError(f"Pressure dropped below zero. ({P})")
+            
+            # Store the results
+            flow_types.append(flow_type)
+            liquid_hold_ups.append(hole_up)
         except Exception as e:
             print(f"Error calculating pressure drop in section {i+1}: {e}")
             break
 
-    # return total_pressure_drop
-    return total_pressure_drop, T_initial, flow_type, hole_up, qo, qw, qg
+    # Save results to an Excel file
+    df = pd.DataFrame({
+        'Section': range(1, len(flow_types) + 1),
+        'Flow Type': flow_types,
+        'Liquid Hold Up': liquid_hold_ups
+    })
+    df.to_excel('flow_results.xlsx', index=False)
+
+    return total_pressure_drop, flow_types, liquid_hold_ups
 
 
 
@@ -305,9 +320,9 @@ total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
 separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-total_pressure_loss, T, flow_type, hole_up, qo, qw, qg = calculate_total_pressure_drop(num_sections=100, 
-                                    P_initial=1200,
-                                    T_initial=bottom_hole_temperature, liquid_rate=liquid_rate, 
+total_pressure_loss, T, flow_type, hole_up, qo, qw, qg = calculate_total_pressure_drop( 
+                                    num_sections=1000, P_initial=983,
+                                    T_initial=133, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,
                                     diameter=pipe_diameter, angle=inclination_angle,
