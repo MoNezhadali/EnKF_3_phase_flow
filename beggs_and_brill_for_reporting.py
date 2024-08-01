@@ -237,7 +237,7 @@ def beggs_and_brill(P,T,liquid_rate, WC, GOR, gas_grav, oil_grav,
 
     # print(flow_type)
     # print(total_pres_loss_grad)
-    return total_pres_loss_grad, flow_type, EL, qo * 15387, qw * 15387, qg * 86400
+    return total_pres_loss_grad, flow_type, EL, qo * 15387, qw * 15387, qg * 86400, NFr, CL
 
 
 
@@ -257,6 +257,8 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
     # Initialize lists to store results
     flow_types = []
     liquid_hold_ups = []
+    NFr_values = []
+    CL_values = []
 
     for i in range(num_sections):
         try:
@@ -264,12 +266,12 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
             T = T_initial + temp_gradient * (section_length * i)
             
             # Calculate the pressure gradient using Beggs and Brill method
-            pressure_gradient, flow_type, hole_up, qo, qw, qg = beggs_and_brill(P, T,
-                                                                                liquid_rate, 
-                                                                                WC, GOR, gas_grav,
-                                                                                oil_grav, wtr_grav, 
-                                                                                diameter, angle, 
-                                                                                roughness, Psep, Tsep)
+            pressure_gradient, flow_type, hold_up, qo, qw, qg, NFr, CL = beggs_and_brill(P, T,
+                                                                                        liquid_rate, 
+                                                                                        WC, GOR, gas_grav,
+                                                                                        oil_grav, wtr_grav, 
+                                                                                        diameter, angle, 
+                                                                                        roughness, Psep, Tsep)
             if pressure_gradient < 0:
                 raise ValueError("Pressure gradient calculation returned a negative value.")
             
@@ -285,18 +287,45 @@ def calculate_total_pressure_drop(num_sections, P_initial, T_initial, liquid_rat
             
             # Store the results
             flow_types.append(flow_type)
-            liquid_hold_ups.append(hole_up)
+            liquid_hold_ups.append(hold_up)
+            NFr_values.append(NFr)
+            CL_values.append(CL)
         except Exception as e:
-            print(f"Error calculating pressure drop in section {i+1}: {e}")
+            print(f"Error calculating pressure drop in section {i + 1}: {e}")
             break
 
     # Save results to an Excel file
     df = pd.DataFrame({
         'Section': range(1, len(flow_types) + 1),
         'Flow Type': flow_types,
-        'Liquid Hold Up': liquid_hold_ups
+        'Liquid Hold Up': liquid_hold_ups,
+        'NFr': NFr_values,
+        'CL': CL_values
     })
     df.to_excel('flow_results.xlsx', index=False)
+
+    # Plot results
+    plt.figure(figsize=(12, 6))
+
+    plt.subplot(2, 1, 1)
+    plt.plot(df['Section'], df['NFr'], label='NFr')
+    plt.xlabel('Section')
+    plt.ylabel('NFr')
+    plt.title('Froude Number (NFr) per Section')
+    plt.legend()
+    plt.grid(True)
+
+    plt.subplot(2, 1, 2)
+    plt.plot(df['Section'], df['CL'], label='CL', color='orange')
+    plt.xlabel('Section')
+    plt.ylabel('CL')
+    plt.title('Liquid Volume Fraction (CL) per Section')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.savefig('flow_results_plot.png')
+    plt.show()
 
     return total_pressure_drop, flow_types, liquid_hold_ups
 
@@ -320,8 +349,8 @@ total_pipe_length = all_initial_and_boundary_conditions["total_pipe_length"]
 separator_pressure = all_initial_and_boundary_conditions["separator_pressure"]
 separator_temperature = all_initial_and_boundary_conditions["separator_temperature"]
 
-total_pressure_loss, T, flow_type, hole_up, qo, qw, qg = calculate_total_pressure_drop( 
-                                    num_sections=1000, P_initial=983,
+total_pressure_loss, T, flow_type, hold_up, qo, qw, qg = calculate_total_pressure_drop( 
+                                    num_sections=100, P_initial=983,
                                     T_initial=133, liquid_rate=liquid_rate, 
                                     GOR=gas_oil_ratio, wtr_grav=water_gravity, WC=water_cut,
                                     gas_grav=gas_gravity, oil_grav=oil_gravity,
@@ -330,7 +359,7 @@ total_pressure_loss, T, flow_type, hole_up, qo, qw, qg = calculate_total_pressur
                                     Tsep=separator_temperature, length=total_pipe_length)
 
 print(f"Temperature: {T}\n")
-print(f"Hold up: {hole_up}\n")
+print(f"Hold up: {hold_up}\n")
 print(f"Flow type: {flow_type}\n")
 print(f"Total Pressure Loss: {total_pressure_loss}\n")
 print(f"Top Pressure: {bottom_hole_pressure - total_pressure_loss}\n")

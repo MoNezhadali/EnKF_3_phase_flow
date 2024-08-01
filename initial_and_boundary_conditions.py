@@ -3,6 +3,8 @@ import numpy as np
 def get_initial_and_boundary_conditions():
     bottom_hole_pressure = 988
     bottom_hole_temperature = 132.8
+    # oil_rate = 597 bbl/day
+    # water_rate = 443 bbl/day
     liquid_rate = 1040
     water_cut = 0.426
     gas_oil_ratio = 237.86
